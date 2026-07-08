@@ -9,7 +9,7 @@ on:
 concurrency: ci-${{ github.ref }} # to avoid tag collisions in the ECR
 env:
   # repository variables:
-  KBC_DEVELOPERPORTAL_APP: "kds-team.ex-google-cloud-storage" # replace with your component id
+  KBC_DEVELOPERPORTAL_APP: "kds-team.wr-google-cloud-storage" # replace with your component id
   KBC_DEVELOPERPORTAL_VENDOR: "kds-team" # replace with your vendor
   DOCKERHUB_USER: ${{ secrets.DOCKERHUB_USER }}
   KBC_DEVELOPERPORTAL_USERNAME: "kds-team+github"
