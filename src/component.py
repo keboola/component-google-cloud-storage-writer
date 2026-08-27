@@ -12,7 +12,7 @@ import keboola.component.dao
 from keboola.component import CommonInterface
 from google_cloud_storage.client import StorageClient
 from google.auth.exceptions import GoogleAuthError
-from google.api_core.exceptions import NotFound, ServerError
+from google.api_core.exceptions import Forbidden, NotFound, ServerError
 
 KEY_BUCKET_NAME = "bucket_name"
 KEY_APPENDDATE = "append_date"
@@ -94,6 +94,11 @@ class Component(CommonInterface):
             raise UserException(f"Upload failed after retries due to : {google_error}")
         except NotFound as e:
             raise UserException(f"Not Found error occurred, make sure Project and Folder in Google cloud exists: {e}")
+        except Forbidden as e:
+            raise UserException(f"Access to the Google Cloud Storage bucket was denied (HTTP 403). Make sure the "
+                                f"authorized account has permission to write to the target bucket. Overwriting an "
+                                f"already existing object additionally requires the storage.objects.delete "
+                                f"permission, granted for example by the Storage Object Admin role: {e}") from e
         except ServerError as e:
             raise UserException(f"Upload failed due to an internal server error "
                                 f"in Google Cloud Storage after retrying for 60 seconds: {e}")
