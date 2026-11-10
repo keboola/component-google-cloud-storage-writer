@@ -1,3 +1,7 @@
+**1.1.5**
+
+- retry a failed upload chunk (for example a transient 503 from Google Cloud Storage) in the same upload session, instead of restarting the whole file
+
 **0.1.1**
 
 - fix requirements

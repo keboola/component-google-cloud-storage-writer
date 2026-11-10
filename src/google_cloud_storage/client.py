@@ -4,6 +4,7 @@ import os
 import backoff
 from google.api_core.exceptions import ServerError
 from google.cloud import storage
+from google.cloud.storage.retry import DEFAULT_RETRY
 from google.auth.transport import requests
 from google.oauth2.credentials import Credentials as ClientIdCredentials
 from google.oauth2.service_account import Credentials as ServiceCredentials
@@ -15,6 +16,11 @@ KEY_AUTH_DATA = "data"
 KEY_SERVICE_ACCOUNT = "#service_account_key"
 
 CLIENT_ID_TOKEN_URI = "https://accounts.google.com/o/oauth2/token"
+
+# google-cloud-storage 2.x does not retry upload requests unless if_generation_match is set,
+# so a single transient 503 on one chunk failed the whole upload. Retry each chunk in the same
+# resumable session, for up to 10 minutes per chunk.
+UPLOAD_RETRY = DEFAULT_RETRY.with_timeout(600)
 
 
 class StorageClient(storage.Client):
@@ -71,7 +77,7 @@ class StorageClient(storage.Client):
         bucket = self.bucket(bucket_name)
         blob = bucket.blob(destination_blob_name)
         if os.path.isfile(source_file_path):
-            blob.upload_from_filename(source_file_path)
+            blob.upload_from_filename(source_file_path, retry=UPLOAD_RETRY)
             self.write_log_messages(f"File {source_file_path} uploaded to {destination_blob_name}.\n")
         else:
             self.write_log_messages(f"Skipping: {source_file_path} - is a directory.\n")
